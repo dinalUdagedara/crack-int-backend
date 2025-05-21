@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "dev": "fastapi dev main.py"
+  }
+}
