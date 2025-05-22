@@ -1,5 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 from app import models
+from app.apis.questions.service import QuestionService
+from app.common.http_response import CommonResponse
 from app.database import db_dependency
 import logging
 
@@ -20,11 +22,15 @@ async def read_question(db: db_dependency):
         raise HTTPException(status_code=404, detail='Question Not Found')
     return result
 
-    # logger.info(result)
 
-    # return CommonResponse[List[QuestionBase]](
-    #     message="Questions retrieved successfully",
-    #     success=True,
-    #     payload=result,
-    #     meta=None  # Or you can calculate pagination info here
-    # )
+@router.get("/from-service/",
+            name="Get all the questions using the service function",
+            status_code=status.HTTP_200_OK,
+            )
+async def read_question_from_service(db: db_dependency):
+
+    question_service = QuestionService(db)
+    questions = question_service.get_all_questions()
+    if not questions:
+        raise HTTPException(status_code=404, detail='Question Not Found')
+    return questions
