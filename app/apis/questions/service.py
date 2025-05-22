@@ -1,5 +1,6 @@
 from typing import List
 from sqlalchemy.orm import Session
+from app.apis.questions.schemas import QuestionSchema
 from app.models import Questions
 from app.common.logger import logger
 
@@ -8,7 +9,7 @@ class QuestionService:
     def __init__(self, db_session: Session):
         self.session = db_session
 
-    def get_all_questions(self) -> List[Questions]:
+    def get_all_questions(self) -> List[QuestionSchema]:
         """
         Get all questions from the database
         """
