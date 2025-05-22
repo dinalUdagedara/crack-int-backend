@@ -1,5 +1,6 @@
 {
   "scripts": {
-    "dev": "fastapi dev app/main.py"
+    "dev": "fastapi dev app/main.py",
+    "uvicorn": "uvicorn app.main:app --reload"
   }
 }
