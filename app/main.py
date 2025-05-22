@@ -1,20 +1,12 @@
-from typing import Annotated, List, Union
-from fastapi import Depends, FastAPI, HTTPException
+from typing import Union
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 from app import models
-from app.database import engine, SessionLocal
-from sqlalchemy.orm import Session
+from app.database import engine
+from app.database import db_dependency
+from app.apis.routes import api_router
 
-
-class ChoiceBase(BaseModel):
-    choice_text: str
-    is_correct: bool
-
-
-class QuestionBase(BaseModel):
-    question_text: str
-    choices: List[ChoiceBase]
+from app.schemas import QuestionBase
 
 
 app = FastAPI()
@@ -29,6 +21,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(api_router, prefix="/api/v1")
+
 
 @app.get("/api/hello")
 def hello():
@@ -38,18 +32,6 @@ def hello():
 @app.get("/items/{item_id}")
 def read_item(item_id: int, q: Union[str, None] = None):
     return {"item_id": item_id, "q": q}
-
-
-def get_db():
-    db = SessionLocal()
-
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-db_dependency = Annotated[Session, Depends(get_db)]
 
 
 @app.get('/questions/{question_id}')
