@@ -59,3 +59,23 @@ class QuestionService:
             self.session.rollback()
             logger.error(f"Error updating question with id {id}: {e}")
             raise e
+
+    def delete_question(self, id: str) -> bool:
+        """
+        Delete a question by ID.
+        """
+        try:
+            question = self.session.query(Questions).filter(
+                Questions.id == id).first()
+            if not question:
+                logger.warning(f"Question with id {id} not found.")
+                return False
+
+            self.session.delete(question)
+            self.session.commit()
+            return True
+
+        except Exception as e:
+            self.session.rollback()
+            logger.error(f"Error deleting question with id {id}: {e}")
+            raise e

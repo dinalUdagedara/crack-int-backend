@@ -123,3 +123,45 @@ async def update_question(
         )
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
         return payload
+
+
+@router.delete("/{question_id}",
+               name="Delete question by ID",
+               status_code=status.HTTP_200_OK,
+               response_model=CommonResponse[Optional[str]]
+               )
+async def delete_question(
+    response: Response,
+    db: db_dependency,
+    question_id: str
+):
+    try:
+        question_service = QuestionService(db)
+        deleted = question_service.delete_question(question_id)
+
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Question not found")
+
+        payload = CommonResponse(
+            message="Question deleted successfully",
+            success=True,
+            payload=f"Question with ID {question_id} has been deleted.",
+            meta=None
+        )
+        response.status_code = status.HTTP_200_OK
+        return payload
+
+    except HTTPException as http_err:
+        payload = CommonResponse(
+            success=False, message=str(http_err.detail), payload=None, meta=None
+        )
+        response.status_code = http_err.status_code
+        return payload
+
+    except Exception as err:
+        logger.error(f"Unexpected error deleting question: {err}")
+        payload = CommonResponse(
+            success=False, message="Internal Server Error", payload=None, meta=None
+        )
+        response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        return payload
