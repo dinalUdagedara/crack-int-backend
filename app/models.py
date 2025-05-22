@@ -1,9 +1,15 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+"""
+Database models for the Questions and Choices tables.
+"""
 
-from app.database import Base
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from app.database import Base  
 
 
 class Questions(Base):
+    """
+    Represents a question in the database.
+    """
     __tablename__ = "questions"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -11,6 +17,9 @@ class Questions(Base):
 
 
 class Choices(Base):
+    """
+    Represents possible choices for a question.
+    """
     __tablename__ = 'choices'
 
     id = Column(Integer, primary_key=True, index=True)

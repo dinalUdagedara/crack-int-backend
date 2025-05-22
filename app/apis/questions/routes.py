@@ -7,6 +7,7 @@ from app.apis.questions.service import QuestionService
 from app.common.http_response import CommonResponse
 from app.database import db_dependency
 import logging
+from app.schemas import QuestionBase
 
 
 router = APIRouter()
@@ -165,3 +166,37 @@ async def delete_question(
         )
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
         return payload
+
+
+@router.post("/",
+             name="Create question with choices",
+             status_code=status.HTTP_201_CREATED,
+             response_model=CommonResponse[QuestionSchema])
+async def create_question(
+    question: QuestionBase,
+    response: Response,
+    db: db_dependency
+):
+    try:
+        question_service = QuestionService(db)
+        created_question = question_service.create_question(question)
+
+        if not created_question:
+            raise HTTPException(
+                status_code=400, detail="Failed to create question")
+
+        return CommonResponse(
+            message="Question created successfully",
+            success=True,
+            payload=created_question,
+            meta=None
+        )
+
+    except HTTPException as http_err:
+        response.status_code = http_err.status_code
+        return CommonResponse(
+            success=False,
+            message=str(http_err.detail),
+            payload=None,
+            meta=None
+        )

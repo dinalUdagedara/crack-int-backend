@@ -4,6 +4,8 @@ from app.apis.questions.schemas import QuestionSchema, UpdateQuestionSchema
 from app.models import Questions
 from app.common.logger import logger
 from sqlalchemy import select
+from app.schemas import QuestionBase
+from app.models import Choices
 
 
 class QuestionService:
@@ -78,4 +80,34 @@ class QuestionService:
         except Exception as e:
             self.session.rollback()
             logger.error(f"Error deleting question with id {id}: {e}")
+            raise e
+
+    def create_question(self, question_data: QuestionBase) -> Optional[QuestionSchema]:
+        """
+        Create a new question with its choices.
+        """
+        try:
+            # Create question
+            question = Questions(question_text=question_data.question_text)
+            self.session.add(question)
+            self.session.commit()
+            self.session.refresh(question)
+
+            # Create associated choices
+            for choice in question_data.choices:
+                db_choice = Choices(
+                    choice_text=choice.choice_text,
+                    is_correct=choice.is_correct,
+                    question_id=question.id
+                )
+                self.session.add(db_choice)
+
+            self.session.commit()
+            self.session.refresh(question)
+
+            return question  # SQLAlchemy model; FastAPI will convert to response model
+
+        except Exception as e:
+            self.session.rollback()
+            logger.error(f"Error creating question: {e}")
             raise e

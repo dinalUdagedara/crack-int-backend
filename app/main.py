@@ -2,8 +2,7 @@ from typing import Union
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from app import models
-from app.database import engine
-from app.database import db_dependency
+from app.database import engine,db_dependency
 from app.apis.routes import api_router
 
 from app.schemas import QuestionBase
