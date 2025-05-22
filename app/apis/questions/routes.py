@@ -2,7 +2,7 @@ from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Path, Response, status
 from uuid import UUID
 from app import models
-from app.apis.questions.schemas import QuestionSchema
+from app.apis.questions.schemas import QuestionSchema, UpdateQuestionSchema
 from app.apis.questions.service import QuestionService
 from app.common.http_response import CommonResponse
 from app.database import db_dependency
@@ -78,4 +78,48 @@ async def read_question_from_service(
             success=False, message=str(http_err.detail), payload=None, meta=None
         )
         response.status_code = http_err.status_code
+        return payload
+
+
+@router.put("/{question_id}",
+            name="Update question by ID",
+            status_code=status.HTTP_200_OK,
+            response_model=CommonResponse[Optional[QuestionSchema]]
+            )
+async def update_question(
+    response: Response,
+    db: db_dependency,
+    question_id: str,
+    question_data: UpdateQuestionSchema
+):
+    try:
+        question_service = QuestionService(db)
+        updated_question = question_service.update_question(
+            question_id, question_data)
+
+        if not updated_question:
+            raise HTTPException(status_code=404, detail="Question not found")
+
+        payload = CommonResponse(
+            message="Question updated successfully",
+            success=True,
+            payload=updated_question,
+            meta=None
+        )
+        response.status_code = status.HTTP_200_OK
+        return payload
+
+    except HTTPException as http_err:
+        payload = CommonResponse(
+            success=False, message=str(http_err.detail), payload=None, meta=None
+        )
+        response.status_code = http_err.status_code
+        return payload
+
+    except Exception as err:
+        logger.error(f"Unexpected error updating question: {err}")
+        payload = CommonResponse(
+            success=False, message="Internal Server Error", payload=None, meta=None
+        )
+        response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
         return payload
