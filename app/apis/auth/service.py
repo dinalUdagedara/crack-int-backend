@@ -32,7 +32,7 @@ class AuthService:
 
     #     return user
 
-    def createUser(self, user_create: SocialProviderUserCreate) -> Optional[User] :
+    def createUser(self, user_create: SocialProviderUserCreate) -> Optional[SocialProviderUser]:
         existing_user = self.session.query(User).filter(
             User.email == user_create.email).first()
         if existing_user:
@@ -52,7 +52,11 @@ class AuthService:
         try:
             self.session.commit()
             self.session.refresh(new_user)
-            return new_user
+            return SocialProviderUser(
+                first_name=new_user.first_name,
+                last_name=new_user.last_name,
+                email=new_user.email
+            )
         except IntegrityError:
             self.session.rollback()
             raise HTTPException(
